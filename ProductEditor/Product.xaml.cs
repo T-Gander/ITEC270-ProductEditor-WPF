@@ -24,5 +24,23 @@ namespace WPFDemo1
         {
             InitializeComponent();
         }
+
+        public Product(int id, string productname, int supplierid, decimal price)
+        {
+            InitializeComponent();
+            
+            this.lblProductName.Content = productname;
+            this.lblProductSupplier.Content = supplierid;
+            this.lblProductPrice.Content = price;
+        }
+
+        public Product(ProductRecords p)
+        {
+            InitializeComponent();
+
+            this.lblProductName.Content = p.ProductName;
+            this.lblProductSupplier.Content = p.SupplierID;
+            this.lblProductPrice.Content = p.Price;
+        }
     }
 }

@@ -10,33 +10,25 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace WPFDemo1
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for Window1.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class SearchWindow : Window
     {
-        public MainWindow()
+        public SearchWindow()
         {
             InitializeComponent();
+            txtSearch.Focus();
         }
 
-        private void btnTest_Click(object sender, RoutedEventArgs e)
+        private void btnSearch_Click(object sender, RoutedEventArgs e)
         {
-            Button btn = new Button();
-            btn.Content = "New Button";
-
-            lstTest.Items.Add(btn);
-        }
-
-        private void btnTest2_Click(object sender, RoutedEventArgs e)
-        {
-            Product p = new Product();
-            lstTest.Items.Add(p);
+            MainWindow.SearchTerm = txtSearch.Text;
+            this.Close();
         }
     }
 }

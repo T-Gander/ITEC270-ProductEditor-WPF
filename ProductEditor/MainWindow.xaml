@@ -14,13 +14,18 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
-            <RowDefinition Height="4*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
             <RowDefinition Height="2*"/>
         </Grid.RowDefinitions>
 
-        <Button x:Name="btnTest" Content="Hello World" Click="btnTest_Click"/>
-        <Button x:Name="btnTest2" Content="Goodbye" Grid.Row="1" Click="btnTest2_Click" />
-        <ListBox x:Name="lstTest" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" />
+        <Button x:Name="btnSearch" Content="Search" Grid.Row="1" Click="btnSearch_Click"/>
+        <Button x:Name="btnEdit" Content="Edit" Grid.Row="2" Click="btnEdit_Click" />
+        <Button x:Name="btnAdd" Content="Add" Grid.Row="3" Click="btnAdd_Click" />
+        <Button x:Name="btnDelete" Content="Delete" Grid.Row="4" Click="btnDelete_Click" />
+        <ListBox x:Name="lstResults" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan="4" />
         
 
     </Grid>

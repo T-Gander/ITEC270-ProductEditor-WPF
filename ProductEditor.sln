@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFDemo1", "WPFDemo1\WPFDemo1.csproj", "{C58F9000-C32D-4CEE-924F-6D6F9D1CBDFA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductEditor", "ProductEditor\ProductEditor.csproj", "{C58F9000-C32D-4CEE-924F-6D6F9D1CBDFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
