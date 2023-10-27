@@ -20,7 +20,10 @@ namespace WPFDemo1
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                SqlCommand cmd = new SqlCommand("select * from products",conn);
+
+                SqlCommand cmd;
+
+                cmd = new SqlCommand($"select ProductID, ProductName, (select CompanyName from Suppliers s where p.SupplierID = s.SupplierID) [SupplierName], UnitPrice from products p order by ProductName", conn);
                 var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -152,11 +155,11 @@ namespace WPFDemo1
                     int supplierID = 0;
 
                     getSupplierID = new SqlCommand("select SupplierID from suppliers where CompanyName = @ProductSupplier", conn);
+                    getSupplierID.Parameters.AddWithValue("@ProductSupplier", productSupplier);
 
                     cmd = new SqlCommand(@$"
-                    insert into products (
-                    values (ProductName = @ProductName, SupplierID = @NewSupplierID, UnitPrice = @Price
-                    where ProductName = @PreviousName)"
+                    insert into products (ProductName, SupplierID, UnitPrice)
+                    values (@ProductName, @SupplierID, @Price)"
                     , conn);
 
                     using (SqlDataReader reader = getSupplierID.ExecuteReader())
@@ -169,17 +172,68 @@ namespace WPFDemo1
 
                     if(supplierID != 0)
                     {
+                        cmd.Parameters.AddWithValue("@SupplierID", supplierID);
                         cmd.Parameters.AddWithValue("@ProductName", productName);
                         cmd.Parameters.AddWithValue("@Price", price);
-                        cmd.Parameters.AddWithValue("@ProductSupplier", supplierID);
 
                         cmd.ExecuteNonQuery();
                     }
                     else
                     {
-                        MessageBox.Show("Select a Supplier.");
+                        MessageBox.Show("Something went wrong.");
                     }
-                    
+                }
+            }
+            else
+            {
+                MessageBox.Show("Incorrect pricing format.");
+            }
+        }
+
+        public void DeleteProduct(Product product)
+        {
+            decimal price;
+            bool priceFormatCorrect = decimal.TryParse(product.lblProductPrice.Content.ToString(), out price);
+
+            if (priceFormatCorrect)
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    SqlCommand cmd;
+                    SqlCommand getProductID;
+
+                    int productID = 0;
+                    string productName = product.lblProductName.Content.ToString();
+
+                    getProductID = new SqlCommand("select ProductID from products where ProductName = @ProductName", conn);
+                    getProductID.Parameters.AddWithValue("@ProductName", productName);
+
+                    cmd = new SqlCommand(@$"
+                    delete from products
+                    where ProductID = @ProductID
+                    "
+                    , conn);
+
+                    using (SqlDataReader reader = getProductID.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            productID = reader.GetInt32(0); // Directly retrieve the integer value
+                        }
+                    }
+
+                    if (productID != 0)
+                    {
+                        cmd.Parameters.AddWithValue("@ProductID", productID);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Something went wrong.");
+                    }
                 }
             }
             else

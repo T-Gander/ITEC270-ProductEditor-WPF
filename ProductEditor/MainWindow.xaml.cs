@@ -27,6 +27,23 @@ namespace WPFDemo1
         public MainWindow()
         {
             InitializeComponent();
+            DatabaseManager mngr = new DatabaseManager();
+
+            var listProducts = mngr.GetProducts();
+
+            if (listProducts.Count > 0)
+            {
+                foreach (var p in listProducts)
+                {
+                    Product pc = new Product(p);
+                    lstResults.Items.Add(pc);
+                }
+            }
+            else
+            {
+                lstResults.Items.Add("No Products Found");
+            }
+
         }
 
         private async void btnSearch_Click(object sender, RoutedEventArgs e)
@@ -65,7 +82,7 @@ namespace WPFDemo1
 
                 lstResults.Items.Clear();
 
-                var listProducts = mngr.SearchProducts(SearchTerm);
+                var listProducts = mngr.GetProducts();
 
                 foreach (var p in listProducts)
                 {
@@ -96,7 +113,22 @@ namespace WPFDemo1
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
+            if (lstResults.SelectedIndex != -1)
+            {
+                DatabaseManager mngr = new DatabaseManager();
 
+                EditableProduct = lstResults.SelectedItem as Product;
+
+                lstResults.Items.Clear();
+
+                var listProducts = mngr.SearchProducts(SearchTerm);
+
+                foreach (var p in listProducts)
+                {
+                    Product pc = new Product(p);
+                    lstResults.Items.Add(pc);
+                }
+            }
         }
 
         private Task ShowPopup<TPopup>(TPopup popup)    //Stack overflow
@@ -108,6 +140,27 @@ namespace WPFDemo1
             popup.Show();
             popup.Focus();
             return task.Task;
+        }
+
+        private void btnRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            lstResults.Items.Clear();
+            DatabaseManager mngr = new DatabaseManager();
+
+            var listProducts = mngr.GetProducts();
+
+            if (listProducts.Count > 0)
+            {
+                foreach (var p in listProducts)
+                {
+                    Product pc = new Product(p);
+                    lstResults.Items.Add(pc);
+                }
+            }
+            else
+            {
+                lstResults.Items.Add("No Products Found");
+            }
         }
     }
 }
