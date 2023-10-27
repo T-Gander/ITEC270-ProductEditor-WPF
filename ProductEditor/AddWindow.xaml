@@ -40,7 +40,7 @@
                  Grid.Column="3" 
                  Grid.ColumnSpan="4"
                  FontSize="26"/>
-        
+
         <Label x:Name="lblPrice" 
                Content="Product Price:" 
                VerticalAlignment="Center" 
@@ -69,18 +69,31 @@
                  FontSize="26"/>
         <Button x:Name="btnSave"
                 Content="Save"
-                Grid.Row="4"
+                Grid.Row="5"
                 Grid.Column="3"
                 Grid.ColumnSpan="2"
-                Margin="5"
+                Margin="5,5,5,5"
                 Click="btnSave_Click"/>
 
         <Button x:Name="btnExit"
                 Content="Cancel"
-                Grid.Row="4"
-                Margin="5"
+                Grid.Row="5"
+                Margin="5,5,5,5"
                 Grid.Column="5"
                 Grid.ColumnSpan="2"
                 Click="btnExit_Click"/>
+        <Label x:Name="lblCategory" 
+            Content="Category:" 
+            VerticalAlignment="Top" 
+            HorizontalAlignment="Center" 
+            Grid.ColumnSpan="2"
+            Grid.Column="1"
+            Grid.Row="4" Margin="0,29,0,0"
+               />
+        <ComboBox x:Name="cmbCategory" 
+            Grid.Row="3" 
+            Grid.Column="3" 
+            Grid.ColumnSpan="4"
+            FontSize="26" Margin="0,72,0,72" Grid.RowSpan="3"/>
     </Grid>
 </Window>

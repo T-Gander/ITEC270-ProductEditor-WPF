@@ -20,6 +20,7 @@
             <Label Content="Product Name" x:Name="lblProductName" x:FieldModifier="public"/>
             <Label Content="Product Price" x:Name="lblProductPrice" x:FieldModifier="public"/>
             <Label Content="Product Supplier" x:Name="lblProductSupplier" x:FieldModifier="public"/>
+            <Label Content="Product Category" x:Name="lblProductCategory" x:FieldModifier="public"/>
         </StackPanel>
     </Grid>
 </UserControl>

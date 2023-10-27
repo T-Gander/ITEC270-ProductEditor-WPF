@@ -25,12 +25,13 @@ namespace ProductEditor
         {
             InitializeComponent();
             DatabaseManager mngr = new DatabaseManager();
-            txtProductName.Text = product.lblProductName.Content.ToString();
-            string price = product.lblProductPrice.Content.ToString();
+            txtProductName.Text = "";
+            string price = "";
             txtPrice.Text = price.Replace("$","");
             cmbSupplier.ItemsSource = mngr.GetSuppliers(); //replace with a list of suppliers.
             cmbSupplier.SelectedItem = product.lblProductSupplier.Content.ToString();
-            //cmbSupplier.Text = product.lblProductSupplier.Content.ToString();
+            cmbCategory.ItemsSource = mngr.GetCategories();
+            cmbSupplier.SelectedItem = product.lblProductCategory.Content.ToString();
         }
 
         private void btnSave_Click(object sender, RoutedEventArgs e)
@@ -43,20 +44,20 @@ namespace ProductEditor
             {
                 string productName = txtProductName.Text;
                 string supplierName = cmbSupplier.SelectedItem.ToString();
+                string categoryName = cmbCategory.SelectedItem.ToString();
 
-                Product editedProduct = new Product(productName, supplierName, price);
+                Product editedProduct = new Product(productName, supplierName, price, categoryName);
 
                 //Update table
                 DatabaseManager mngr = new DatabaseManager();
 
                 mngr.AddProduct(editedProduct);
+                Close();
             }
             else
             {
-                MessageBox.Show("Something went wrong");
+                MessageBox.Show("Something went wrong, make sure there are no illegal characters.");
             }
-
-            Close();
         }
 
         private void btnExit_Click(object sender, RoutedEventArgs e)

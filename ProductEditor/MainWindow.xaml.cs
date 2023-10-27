@@ -90,6 +90,10 @@ namespace WPFDemo1
                     lstResults.Items.Add(pc);
                 }
             }
+            else
+            {
+                MessageBox.Show("Select a product to edit!");
+            }
         }
 
         private async void btnAdd_Click(object sender, RoutedEventArgs e)
@@ -102,7 +106,7 @@ namespace WPFDemo1
 
             lstResults.Items.Clear();
 
-            var listProducts = mngr.SearchProducts(SearchTerm);
+            var listProducts = mngr.GetProducts();
 
             foreach (var p in listProducts)
             {
@@ -119,9 +123,11 @@ namespace WPFDemo1
 
                 EditableProduct = lstResults.SelectedItem as Product;
 
+                mngr.DeleteProduct(EditableProduct);
+
                 lstResults.Items.Clear();
 
-                var listProducts = mngr.SearchProducts(SearchTerm);
+                var listProducts = mngr.GetProducts();
 
                 foreach (var p in listProducts)
                 {
@@ -137,7 +143,7 @@ namespace WPFDemo1
             var task = new TaskCompletionSource<object>();
             popup.Owner = Application.Current.MainWindow;
             popup.Closed += (s, a) => task.SetResult(null);
-            popup.Show();
+            popup.ShowDialog();
             popup.Focus();
             return task.Task;
         }

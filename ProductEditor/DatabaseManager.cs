@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SqlClient; //Sql using statement
+﻿using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
+using System.Data.SqlClient; //Sql using statement
 using System.Windows;
 
 namespace WPFDemo1
@@ -23,7 +18,7 @@ namespace WPFDemo1
 
                 SqlCommand cmd;
 
-                cmd = new SqlCommand($"select ProductID, ProductName, (select CompanyName from Suppliers s where p.SupplierID = s.SupplierID) [SupplierName], UnitPrice from products p order by ProductName", conn);
+                cmd = new SqlCommand($"select ProductID, ProductName, (select CompanyName from Suppliers s where p.SupplierID = s.SupplierID) [SupplierName], (select CategoryName from Categories c where p.CategoryID = c.CategoryID) [CategoryName], UnitPrice from products p order by ProductName", conn);
                 var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -32,7 +27,8 @@ namespace WPFDemo1
                     p.Id = reader.GetInt32(0);
                     p.ProductName = reader.GetString(1);
                     p.SupplierID = reader.GetString(2);
-                    p.Price = reader.GetDecimal(3);
+                    p.CategoryName = reader.GetString(3);
+                    p.Price = reader.GetDecimal(4);
 
                     products.Add(p);
                 }
@@ -49,7 +45,7 @@ namespace WPFDemo1
 
                 SqlCommand cmd;
                 
-                cmd = new SqlCommand($"select ProductID, ProductName, (select CompanyName from Suppliers s where p.SupplierID = s.SupplierID) [SupplierName], UnitPrice from products p where ProductName like @search", conn);
+                cmd = new SqlCommand($"select ProductID, ProductName, (select CompanyName from Suppliers s where p.SupplierID = s.SupplierID) [SupplierName], (select CategoryName from Categories c where p.CategoryID = c.CategoryID) [CategoryName], UnitPrice from products p where ProductName like @search", conn);
                 cmd.Parameters.Add(new SqlParameter("@search", search));
                 var reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -59,8 +55,8 @@ namespace WPFDemo1
                     p.Id = reader.GetInt32(0);
                     p.ProductName = reader.GetString(1);
                     p.SupplierID = reader.GetString(2);
-                    p.Price = reader.GetDecimal(3);
-
+                    p.CategoryName = reader.GetString(3);
+                    p.Price = reader.GetDecimal(4);
                     products.Add(p);
                 }
             }
@@ -86,9 +82,95 @@ namespace WPFDemo1
             return suppliers;
         }
 
+        public List<string> GetCategories()
+        {
+            var suppliers = new List<string>();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+                SqlCommand cmd;
+
+                cmd = new SqlCommand($"select CategoryName from Categories", conn);
+                var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    suppliers.Add(reader.GetString(0));
+                }
+            }
+            return suppliers;
+        }
+
+        private int GetSupplierIDSQL(Product product, SqlConnection conn)
+        {
+            SqlCommand getSupplierID;
+
+            string productSupplier = product.lblProductSupplier.Content.ToString();
+
+            getSupplierID = new SqlCommand("select SupplierID from suppliers where CompanyName = @ProductSupplier", conn);
+            getSupplierID.Parameters.AddWithValue("@ProductSupplier", productSupplier);
+
+            int newSupplierID = 0;
+
+            using (SqlDataReader reader = getSupplierID.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    newSupplierID = reader.GetInt32(0); // Directly retrieve the integer value
+                }
+            }
+
+            return newSupplierID;
+        }
+
+        private int GetCategoryIDSQL(Product product, SqlConnection conn)
+        {
+            SqlCommand getCategoryID;
+
+            string productCategory = product.lblProductCategory.Content.ToString();
+
+            getCategoryID = new SqlCommand("select CategoryID from categories where CategoryName = @CategoryName", conn);
+            getCategoryID.Parameters.AddWithValue("@CategoryName", productCategory);
+
+            int newCategoryID = 0;
+
+            using (SqlDataReader reader = getCategoryID.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    newCategoryID = reader.GetInt32(0); // Directly retrieve the integer value
+                }
+            }
+
+            return newCategoryID;
+        }
+
+        private int GetProductIDSQL(Product product, SqlConnection conn)
+        {
+            SqlCommand getProductID;
+
+            string productName = product.lblProductName.Content.ToString();
+
+            getProductID = new SqlCommand("select ProductID from products where ProductName = @ProductName", conn);
+            getProductID.Parameters.AddWithValue("@ProductName", productName);
+
+            int newProductID = 0;
+
+            using (SqlDataReader reader = getProductID.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    newProductID = reader.GetInt32(0); // Directly retrieve the integer value
+                }
+            }
+
+            return newProductID;
+        }
+
         public void EditProduct(Product product, string previousName)
         {
             decimal price;
+            
             bool priceFormatCorrect = decimal.TryParse(product.lblProductPrice.Content.ToString(), out price);
 
             if (priceFormatCorrect)
@@ -98,36 +180,32 @@ namespace WPFDemo1
                     conn.Open();
 
                     SqlCommand cmd;
-                    SqlCommand getSupplierID;
 
                     string productName = product.lblProductName.Content.ToString();
-                    string productSupplier = product.lblProductSupplier.Content.ToString();
-
-                    getSupplierID = new SqlCommand("select SupplierID from suppliers where CompanyName = @ProductSupplier", conn);
-                    getSupplierID.Parameters.AddWithValue("@ProductSupplier", productSupplier);
-
-                    int newSupplierID = 0;
-
-                    using (SqlDataReader reader = getSupplierID.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            newSupplierID = reader.GetInt32(0); // Directly retrieve the integer value
-                        }
-                    }
 
                     cmd = new SqlCommand(@$"
                     update products
-                    set ProductName = @ProductName, SupplierID = @NewSupplierID, UnitPrice = @Price
+                    set ProductName = @ProductName, SupplierID = @NewSupplierID, CategoryID = @NewCategoryID, UnitPrice = @Price
                     where ProductName = @PreviousName"
                     , conn);
 
-                    cmd.Parameters.AddWithValue("@ProductName", productName);
-                    cmd.Parameters.AddWithValue("@NewSupplierID", newSupplierID);
-                    cmd.Parameters.AddWithValue("@Price", price);
-                    cmd.Parameters.AddWithValue("@PreviousName", previousName);
+                    int categoryID = GetCategoryIDSQL(product, conn);
+                    int supplierID = GetSupplierIDSQL(product, conn);
 
-                    cmd.ExecuteNonQuery();
+                    if(categoryID != 0 && supplierID != 0)
+                    {
+                        cmd.Parameters.AddWithValue("@ProductName", productName);
+                        cmd.Parameters.AddWithValue("@NewSupplierID", supplierID);
+                        cmd.Parameters.AddWithValue("@NewCategoryID", categoryID);
+                        cmd.Parameters.AddWithValue("@Price", price);
+                        cmd.Parameters.AddWithValue("@PreviousName", previousName);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Something went wrong.");
+                    }
                 }
             }
             else
@@ -151,27 +229,18 @@ namespace WPFDemo1
                     SqlCommand getSupplierID;
 
                     string productName = product.lblProductName.Content.ToString();
-                    string productSupplier = product.lblProductSupplier.Content.ToString();
-                    int supplierID = 0;
-
-                    getSupplierID = new SqlCommand("select SupplierID from suppliers where CompanyName = @ProductSupplier", conn);
-                    getSupplierID.Parameters.AddWithValue("@ProductSupplier", productSupplier);
 
                     cmd = new SqlCommand(@$"
-                    insert into products (ProductName, SupplierID, UnitPrice)
-                    values (@ProductName, @SupplierID, @Price)"
+                    insert into products (ProductName, SupplierID, CategoryID, UnitPrice)
+                    values (@ProductName, @SupplierID, @CategoryID, @Price)"
                     , conn);
 
-                    using (SqlDataReader reader = getSupplierID.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            supplierID = reader.GetInt32(0); // Directly retrieve the integer value
-                        }
-                    }
+                    int categoryID = GetCategoryIDSQL(product, conn);
+                    int supplierID = GetSupplierIDSQL(product, conn);
 
-                    if(supplierID != 0)
+                    if (supplierID != 0 && categoryID != 0)
                     {
+                        cmd.Parameters.AddWithValue("@CategoryID", categoryID);
                         cmd.Parameters.AddWithValue("@SupplierID", supplierID);
                         cmd.Parameters.AddWithValue("@ProductName", productName);
                         cmd.Parameters.AddWithValue("@Price", price);
@@ -193,7 +262,8 @@ namespace WPFDemo1
         public void DeleteProduct(Product product)
         {
             decimal price;
-            bool priceFormatCorrect = decimal.TryParse(product.lblProductPrice.Content.ToString(), out price);
+            string priceToCheck = product.lblProductPrice.Content.ToString().Replace("$", "");
+            bool priceFormatCorrect = decimal.TryParse(priceToCheck, out price);
 
             if (priceFormatCorrect)
             {
@@ -202,27 +272,14 @@ namespace WPFDemo1
                     conn.Open();
 
                     SqlCommand cmd;
-                    SqlCommand getProductID;
 
-                    int productID = 0;
-                    string productName = product.lblProductName.Content.ToString();
-
-                    getProductID = new SqlCommand("select ProductID from products where ProductName = @ProductName", conn);
-                    getProductID.Parameters.AddWithValue("@ProductName", productName);
+                    int productID = GetProductIDSQL(product, conn);
 
                     cmd = new SqlCommand(@$"
                     delete from products
                     where ProductID = @ProductID
                     "
                     , conn);
-
-                    using (SqlDataReader reader = getProductID.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            productID = reader.GetInt32(0); // Directly retrieve the integer value
-                        }
-                    }
 
                     if (productID != 0)
                     {

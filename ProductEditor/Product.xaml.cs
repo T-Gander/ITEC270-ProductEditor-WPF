@@ -25,13 +25,14 @@ namespace WPFDemo1
             InitializeComponent();
         }
 
-        public Product(string productname, string supplierid, decimal price)
+        public Product(string productname, string supplierid, decimal price, string category)
         {
             InitializeComponent();
             
             this.lblProductName.Content = productname;
             this.lblProductSupplier.Content = supplierid;
             this.lblProductPrice.Content = price;
+            this.lblProductCategory.Content = category;
         }
 
         public Product(ProductRecords p)
@@ -41,6 +42,7 @@ namespace WPFDemo1
             this.lblProductName.Content = p.ProductName;
             this.lblProductSupplier.Content = p.SupplierID;
             this.lblProductPrice.Content = p.Price.ToString("C2");
+            this.lblProductCategory.Content = p.CategoryName;
         }
     }
 }
