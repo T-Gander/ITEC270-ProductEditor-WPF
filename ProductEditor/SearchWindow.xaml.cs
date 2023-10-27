@@ -27,7 +27,7 @@ namespace WPFDemo1
 
         private void btnSearch_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow.SearchTerm = txtSearch.Text;
+            MainWindow.SearchTerm = $"{txtSearch.Text}%";
             this.Close();
         }
     }

@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient; //Sql using statement
 using System.Configuration;
+using System.Diagnostics;
+using System.Windows;
 
 namespace WPFDemo1
 {
@@ -26,8 +28,8 @@ namespace WPFDemo1
                     ProductRecords p = new ProductRecords();
                     p.Id = reader.GetInt32(0);
                     p.ProductName = reader.GetString(1);
-                    p.SupplierID = reader.GetInt32(2);
-                    p.Price = reader.GetDecimal(5);
+                    p.SupplierID = reader.GetString(2);
+                    p.Price = reader.GetDecimal(3);
 
                     products.Add(p);
                 }
@@ -44,7 +46,7 @@ namespace WPFDemo1
 
                 SqlCommand cmd;
                 
-                cmd = new SqlCommand($"select * from products where ProductName = @search", conn);
+                cmd = new SqlCommand($"select ProductID, ProductName, (select CompanyName from Suppliers s where p.SupplierID = s.SupplierID) [SupplierName], UnitPrice from products p where ProductName like @search", conn);
                 cmd.Parameters.Add(new SqlParameter("@search", search));
                 var reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -53,13 +55,137 @@ namespace WPFDemo1
                     ProductRecords p = new ProductRecords();
                     p.Id = reader.GetInt32(0);
                     p.ProductName = reader.GetString(1);
-                    p.SupplierID = reader.GetInt32(2);
-                    p.Price = reader.GetDecimal(5);
+                    p.SupplierID = reader.GetString(2);
+                    p.Price = reader.GetDecimal(3);
 
                     products.Add(p);
                 }
             }
             return products;
+        }
+
+        public List<string> GetSuppliers()
+        {
+            var suppliers = new List<string>();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+                SqlCommand cmd;
+
+                cmd = new SqlCommand($"select CompanyName from suppliers", conn);
+                var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    suppliers.Add(reader.GetString(0));
+                }
+            }
+            return suppliers;
+        }
+
+        public void EditProduct(Product product, string previousName)
+        {
+            decimal price;
+            bool priceFormatCorrect = decimal.TryParse(product.lblProductPrice.Content.ToString(), out price);
+
+            if (priceFormatCorrect)
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    SqlCommand cmd;
+                    SqlCommand getSupplierID;
+
+                    string productName = product.lblProductName.Content.ToString();
+                    string productSupplier = product.lblProductSupplier.Content.ToString();
+
+                    getSupplierID = new SqlCommand("select SupplierID from suppliers where CompanyName = @ProductSupplier", conn);
+                    getSupplierID.Parameters.AddWithValue("@ProductSupplier", productSupplier);
+
+                    int newSupplierID = 0;
+
+                    using (SqlDataReader reader = getSupplierID.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            newSupplierID = reader.GetInt32(0); // Directly retrieve the integer value
+                        }
+                    }
+
+                    cmd = new SqlCommand(@$"
+                    update products
+                    set ProductName = @ProductName, SupplierID = @NewSupplierID, UnitPrice = @Price
+                    where ProductName = @PreviousName"
+                    , conn);
+
+                    cmd.Parameters.AddWithValue("@ProductName", productName);
+                    cmd.Parameters.AddWithValue("@NewSupplierID", newSupplierID);
+                    cmd.Parameters.AddWithValue("@Price", price);
+                    cmd.Parameters.AddWithValue("@PreviousName", previousName);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Incorrect pricing format.");
+            }
+        }
+
+        public void AddProduct(Product product)
+        {
+            decimal price;
+            bool priceFormatCorrect = decimal.TryParse(product.lblProductPrice.Content.ToString(), out price);
+
+            if (priceFormatCorrect)
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    SqlCommand cmd;
+                    SqlCommand getSupplierID;
+
+                    string productName = product.lblProductName.Content.ToString();
+                    string productSupplier = product.lblProductSupplier.Content.ToString();
+                    int supplierID = 0;
+
+                    getSupplierID = new SqlCommand("select SupplierID from suppliers where CompanyName = @ProductSupplier", conn);
+
+                    cmd = new SqlCommand(@$"
+                    insert into products (
+                    values (ProductName = @ProductName, SupplierID = @NewSupplierID, UnitPrice = @Price
+                    where ProductName = @PreviousName)"
+                    , conn);
+
+                    using (SqlDataReader reader = getSupplierID.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            supplierID = reader.GetInt32(0); // Directly retrieve the integer value
+                        }
+                    }
+
+                    if(supplierID != 0)
+                    {
+                        cmd.Parameters.AddWithValue("@ProductName", productName);
+                        cmd.Parameters.AddWithValue("@Price", price);
+                        cmd.Parameters.AddWithValue("@ProductSupplier", supplierID);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Select a Supplier.");
+                    }
+                    
+                }
+            }
+            else
+            {
+                MessageBox.Show("Incorrect pricing format.");
+            }
         }
     }
 }

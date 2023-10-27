@@ -15,11 +15,11 @@
         <Grid.RowDefinitions>
             
         </Grid.RowDefinitions>
-        <Rectangle Width="100" Fill="Black"/>
+        <Rectangle Width="100" Fill="Green"/>
         <StackPanel Grid.Column="1">
-            <Label Content="Product Name" x:Name="lblProductName"/>
-            <Label Content="Product Price" x:Name="lblProductPrice" />
-            <Label Content="Product Supplier" x:Name="lblProductSupplier" />
+            <Label Content="Product Name" x:Name="lblProductName" x:FieldModifier="public"/>
+            <Label Content="Product Price" x:Name="lblProductPrice" x:FieldModifier="public"/>
+            <Label Content="Product Supplier" x:Name="lblProductSupplier" x:FieldModifier="public"/>
         </StackPanel>
     </Grid>
 </UserControl>

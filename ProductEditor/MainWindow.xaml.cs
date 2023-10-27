@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProductEditor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,7 @@ namespace WPFDemo1
     public partial class MainWindow : Window
     {
         public static string SearchTerm = string.Empty;
+        public static Product EditableProduct;
 
         public MainWindow()
         {
@@ -49,18 +51,47 @@ namespace WPFDemo1
             {
                lstResults.Items.Add("No Products Found");
             }
-
-            
         }
 
-        private void btnEdit_Click(object sender, RoutedEventArgs e)
+        private async void btnEdit_Click(object sender, RoutedEventArgs e)
         {
+            if(lstResults.SelectedIndex != -1)
+            {
+                DatabaseManager mngr = new DatabaseManager();
 
+                EditableProduct = lstResults.SelectedItem as Product;
+
+                await ShowPopup(new EditWindow(EditableProduct));
+
+                lstResults.Items.Clear();
+
+                var listProducts = mngr.SearchProducts(SearchTerm);
+
+                foreach (var p in listProducts)
+                {
+                    Product pc = new Product(p);
+                    lstResults.Items.Add(pc);
+                }
+            }
         }
 
-        private void btnAdd_Click(object sender, RoutedEventArgs e)
+        private async void btnAdd_Click(object sender, RoutedEventArgs e)
         {
+            DatabaseManager mngr = new DatabaseManager();
 
+            Product NewProduct = new Product();
+
+            await ShowPopup(new AddWindow(NewProduct));
+
+            lstResults.Items.Clear();
+
+            var listProducts = mngr.SearchProducts(SearchTerm);
+
+            foreach (var p in listProducts)
+            {
+                Product pc = new Product(p);
+                lstResults.Items.Add(pc);
+            }
         }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
